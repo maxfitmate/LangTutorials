@@ -1,31 +1,38 @@
-// agent.mts
+// Load environment variables from .env
+import dotenv from "dotenv";
+dotenv.config();
 
-// IMPORTANT - Set your API keys in environment variables or .env file
-// process.env.OPENAI_API_KEY should be set to your OpenAI API key
-// process.env.TAVILY_API_KEY should be set to your Tavily API key
-
-if (!process.env.OPENAI_API_KEY) {
-  throw new Error("OPENAI_API_KEY environment variable is required");
-}
-
-if (!process.env.TAVILY_API_KEY) {
-  throw new Error("TAVILY_API_KEY environment variable is required");
-}
-
+// Import necessary LangChain components
 import { TavilySearchResults } from "@langchain/community/tools/tavily_search";
 import { ChatOpenAI } from "@langchain/openai";
 import { HumanMessage, AIMessage } from "@langchain/core/messages";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
 import { StateGraph, MessagesAnnotation } from "@langchain/langgraph";
 
+
+const openaiApiKey = process.env.OPENAI_API_KEY;
+const tavilyApiKey = process.env.TAVILY_API_KEY;
+
+// ensure both keys are present
+if (!openaiApiKey || !tavilyApiKey) {
+  throw new Error("Missing OPENAI_API_KEY or TAVILY_API_KEY in environment variables");
+}
+
 // Define the tools for the agent to use
-const tools = [new TavilySearchResults({ maxResults: 3 })];
+const tools = [
+  new TavilySearchResults({
+    maxResults: 3,
+    apiKey: tavilyApiKey,
+  }),
+];
+
 const toolNode = new ToolNode(tools);
 
 // Create a model and give it access to the tools
 const model = new ChatOpenAI({
   model: "gpt-4o-mini",
   temperature: 0,
+  apiKey: openaiApiKey,
 }).bindTools(tools);
 
 // Define the function that determines whether to continue or not
@@ -36,6 +43,7 @@ function shouldContinue({ messages }: typeof MessagesAnnotation.State) {
   if (lastMessage.tool_calls?.length) {
     return "tools";
   }
+
   // Otherwise, we stop (reply to the user) using the special "__end__" node
   return "__end__";
 }
@@ -56,7 +64,7 @@ const workflow = new StateGraph(MessagesAnnotation)
   .addEdge("tools", "agent")
   .addConditionalEdges("agent", shouldContinue);
 
-// Finally, we compile it into a LangChain Runnable.
+// Compile the graph into a LangChain Runnable
 const app = workflow.compile();
 
 // Use the agent
@@ -67,10 +75,6 @@ console.log(finalState.messages[finalState.messages.length - 1].content);
 
 const nextState = await app.invoke({
   // Including the messages from the previous run gives the LLM context.
-  // This way it knows we're asking about the weather in NY
   messages: [...finalState.messages, new HumanMessage("what about ny")],
 });
 console.log(nextState.messages[nextState.messages.length - 1].content);
-
-
-// run this code: npx tsx quickstart.mts

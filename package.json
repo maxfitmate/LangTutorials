@@ -3,6 +3,7 @@
     "@langchain/community": "^0.3.49",
     "@langchain/core": "^0.3.65",
     "@langchain/langgraph": "^0.3.10",
-    "@langchain/openai": "^0.6.2"
+    "@langchain/openai": "^0.6.2",
+    "dotenv": "^17.2.0"
   }
 }
