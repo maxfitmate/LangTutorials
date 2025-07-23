@@ -78,3 +78,6 @@ const nextState = await app.invoke({
   messages: [...finalState.messages, new HumanMessage("what about ny")],
 });
 console.log(nextState.messages[nextState.messages.length - 1].content);
+
+
+// npx tsx quickstart.mts
