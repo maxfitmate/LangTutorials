@@ -2,7 +2,7 @@
 
 LangGraph QuickStart: https://langchain-ai.github.io/langgraphjs/tutorials/quickstart/  ✅
 
-LangGraph Glossary, useful for some terms you'll find in the docs: https://langchain-ai.github.io/langgraphjs/concepts/low_level/
+LangGraph Glossary, useful for some terms you'll find in the docs: https://langchain-ai.github.io/langgraphjs/concepts/low_level/ ✅
 
 Common workflows: https://langchain-ai.github.io/langgraphjs/tutorials/workflows/
 
